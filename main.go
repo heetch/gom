@@ -17,6 +17,7 @@ func usage() {
    gom run     [options]   : Run go file with bundles
    gom doc     [options]   : Run godoc for bundles
    gom exec    [arguments] : Execute command with bundle environment
+   gom update              : Check for newer available versions. Will not update anything
    gom tool    [options]   : Run go tool with bundles
    gom fmt     [arguments] : Run go fmt
    gom gen travis-yml      : Generate .travis.yml which uses "gom test"
@@ -57,6 +58,8 @@ func main() {
 	var err error
 	subArgs := flag.Args()[1:]
 	switch flag.Arg(0) {
+	case "update", "u":
+		err = update(subArgs)
 	case "install", "i":
 		err = install(subArgs)
 	case "build", "b":
