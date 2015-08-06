@@ -82,7 +82,7 @@ func scanDirectory(path, srcDir string) (ret []string, err error) {
 	return ret, err
 }
 
-func genGomfile() error {
+func genGomfile(directory string) error {
 	_, err := os.Stat("Gomfile")
 	if err == nil {
 		return errors.New("Gomfile already exists")
@@ -93,11 +93,7 @@ func genGomfile() error {
 	}
 	defer f.Close()
 
-	dir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	all, err := scanDirectory(".", dir)
+	all, err := scanDirectory(directory, "")
 	if err != nil {
 		return err
 	}
@@ -105,7 +101,7 @@ func genGomfile() error {
 	for _, pkg := range all {
 		fmt.Fprintf(f, "gom '%s'\n", pkg)
 	}
-	return nil
+	return update()
 }
 
 func genGomfileLock() error {

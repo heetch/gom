@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
+
+	"github.com/bgentry/go-netrc/netrc"
 )
 
 type updates struct {
@@ -89,9 +92,23 @@ func getUpdates(g Gom) (*updates, error) {
 	if !strings.HasPrefix(g.name, "github.com/") {
 		return nil, errProviderNotSupported
 	}
+	machines, err := netrc.ParseFile("/Users/arkan/.netrc")
+	if err != nil {
+		return nil, err
+	}
+
+	token := ""
+	m := machines.FindMachine("github.com")
+	if m == nil {
+		fmt.Printf("No github credential set")
+	} else {
+		token = m.Login
+	}
 
 	projectName := strings.Replace(g.name, "github.com/", "", -1)
-	res, err := http.Get(fmt.Sprintf("https://api.github.com/repos/%s/commits", projectName))
+	tab := strings.Split(projectName, "/")
+	packageName := strings.Join(tab[0:2], "/")
+	res, err := http.Get(fmt.Sprintf("https://api.github.com/repos/%s/commits?access_token=%s", packageName, token))
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +120,7 @@ func getUpdates(g Gom) (*updates, error) {
 
 	commits := []*Commit{}
 	if err := json.Unmarshal(body, &commits); err != nil {
+		fmt.Printf("Error with unmarshal: %s: %s\n", err.Error(), string(body))
 		return nil, err
 	}
 
@@ -111,7 +129,7 @@ func getUpdates(g Gom) (*updates, error) {
 	}, nil
 }
 
-func update(args []string) error {
+func update() error {
 	allGoms, err := parseGomfile("Gomfile")
 	if err != nil {
 		return err
@@ -127,21 +145,31 @@ func update(args []string) error {
 		}
 
 		updates, err := getUpdates(g)
-		if err != nil {
-			return err
-		}
-
 		if err == errProviderNotSupported {
 			fmt.Printf("  \\_ Unable to check on this provider. Only github.com is supported\n")
 			continue
+		} else if err != nil {
+			return err
 		}
 
 		if commit == updates.latestVersion {
 			fmt.Printf("  \\_ Up to date\n")
 		} else {
 			fmt.Printf("  \\_ Latest version: %s\n", updates.latestVersion)
+			g.options["commit"] = updates.latestVersion
 		}
 	}
 
+	f, err := os.Create("Gomfile")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	for _, g := range allGoms {
+		fmt.Fprintf(f, "%s\n", g.GomfileEntry())
+	}
+
+	fmt.Printf("\nUp to date\n")
 	return nil
 }

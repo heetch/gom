@@ -17,11 +17,11 @@ func usage() {
    gom run     [options]   : Run go file with bundles
    gom doc     [options]   : Run godoc for bundles
    gom exec    [arguments] : Execute command with bundle environment
-   gom update              : Check for newer available versions. Will not update anything
+   gom update              : Check and update to newer versions
    gom tool    [options]   : Run go tool with bundles
    gom fmt     [arguments] : Run go fmt
    gom gen travis-yml      : Generate .travis.yml which uses "gom test"
-   gom gen gomfile         : Scan packages from current directory as root
+   gom gen gomfile DIR     : Scan packages from current directory as root
                               recursively, and generate Gomfile
    gom lock                : Generate Gomfile.lock
 `, os.Args[0])
@@ -59,7 +59,7 @@ func main() {
 	subArgs := flag.Args()[1:]
 	switch flag.Arg(0) {
 	case "update", "u":
-		err = update(subArgs)
+		err = update()
 	case "install", "i":
 		err = install(subArgs)
 	case "build", "b":
@@ -81,7 +81,12 @@ func main() {
 		case "travis-yml":
 			err = genTravisYml()
 		case "gomfile":
-			err = genGomfile()
+			directory := flag.Arg(2)
+			if directory == "" {
+				usage()
+				return
+			}
+			err = genGomfile(directory)
 		default:
 			usage()
 		}

@@ -102,6 +102,15 @@ type Gom struct {
 	options map[string]interface{}
 }
 
+func (g Gom) GomfileEntry() string {
+	s := fmt.Sprintf("gom '%s'", g.name)
+	if commit, ok := g.options["commit"]; ok {
+		s += fmt.Sprintf(", :commit => '%s'", commit)
+	}
+
+	return s
+}
+
 func parseGomfile(filename string) ([]Gom, error) {
 	f, err := os.Open(filename + ".lock")
 	if err != nil {
