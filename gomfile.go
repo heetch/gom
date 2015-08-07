@@ -107,7 +107,21 @@ func (g Gom) GomfileEntry() string {
 	if commit, ok := g.options["commit"]; ok {
 		s += fmt.Sprintf(", :commit => '%s'", commit)
 	}
-
+	if private, ok := g.options["private"]; ok {
+		s += fmt.Sprintf(", :private => '%s'", private)
+	}
+	if command, ok := g.options["command"]; ok {
+		s += fmt.Sprintf(", :command => '%s'", command)
+	}
+	if branch, ok := g.options["branch"]; ok {
+		s += fmt.Sprintf(", :branch => '%s'", branch)
+	}
+	if target, ok := g.options["target"]; ok {
+		s += fmt.Sprintf(", :target => '%s'", target)
+	}
+	if tag, ok := g.options["tag"]; ok {
+		s += fmt.Sprintf(", :tag => '%s'", tag)
+	}
 	return s
 }
 

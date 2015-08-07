@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/user"
 	"strings"
 
 	"github.com/bgentry/go-netrc/netrc"
@@ -92,7 +93,12 @@ func getUpdates(g Gom) (*updates, error) {
 	if !strings.HasPrefix(g.name, "github.com/") {
 		return nil, errProviderNotSupported
 	}
-	machines, err := netrc.ParseFile("/Users/arkan/.netrc")
+	usr, err := user.Current()
+	if err != nil {
+		return nil, err
+	}
+	dir := usr.HomeDir
+	machines, err := netrc.ParseFile(fmt.Sprintf("%s/.netrc", dir))
 	if err != nil {
 		return nil, err
 	}
