@@ -13,6 +13,7 @@ func usage() {
    gom build   [options]   : Build with _vendor packages
    gom install [options]   : Install bundled packages into _vendor directory, by default.
                               GOM_VENDOR_NAME=. gom install [options], for regular src folder.
+   gom install_offline     : Install bundled packages into _vendor directory, but do not download it.
    gom test    [options]   : Run tests with bundles
    gom run     [options]   : Run go file with bundles
    gom doc     [options]   : Run godoc for bundles
@@ -62,6 +63,8 @@ func main() {
 		err = update()
 	case "install", "i":
 		err = install(subArgs)
+	case "install_offline":
+		err = installOffline(subArgs)
 	case "build", "b":
 		err = run(append([]string{"go", "build"}, subArgs...), None)
 	case "test", "t":
