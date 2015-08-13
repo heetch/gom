@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-func installOffline(args []string) error {
+func buildDeps(args []string) error {
 	allGoms, err := parseGomfile("Gomfile")
 	if err != nil {
 		return err

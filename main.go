@@ -10,21 +10,21 @@ import (
 func usage() {
 	fmt.Printf(`Usage of %s:
  Tasks:
-   gom build   [options]   : Build with _vendor packages
-   gom install [options]   : Install bundled packages into _vendor directory, by default.
-                              GOM_VENDOR_NAME=. gom install [options], for regular src folder.
-   gom install_offline     : Install bundled packages into _vendor directory, but do not download it.
-   gom test    [options]   : Run tests with bundles
-   gom run     [options]   : Run go file with bundles
-   gom doc     [options]   : Run godoc for bundles
-   gom exec    [arguments] : Execute command with bundle environment
-   gom update              : Check and update to newer versions
-   gom tool    [options]   : Run go tool with bundles
-   gom fmt     [arguments] : Run go fmt
-   gom gen travis-yml      : Generate .travis.yml which uses "gom test"
-   gom gen gomfile DIR     : Scan packages from current directory as root
-                              recursively, and generate Gomfile
-   gom lock                : Generate Gomfile.lock
+   gom build       [options]   : Build with _vendor packages
+   gom install     [options]   : Install bundled packages into _vendor directory, by default.
+                                 GOM_VENDOR_NAME=. gom install [options], for regular src folder.
+   gom build_deps  [options]   : build bundled packages into _vendor directory, but do not download it.
+   gom test        [options]   : Run tests with bundles
+   gom run         [options]   : Run go file with bundles
+   gom doc         [options]   : Run godoc for bundles
+   gom exec        [arguments] : Execute command with bundle environment
+   gom update                  : Check and update to newer versions
+   gom tool        [options]   : Run go tool with bundles
+   gom fmt         [arguments] : Run go fmt
+   gom gen travis-yml          : Generate .travis.yml which uses "gom test"
+   gom gen gomfile DIR         : Scan packages from current directory as root
+                                 recursively, and generate Gomfile
+   gom lock                    : Generate Gomfile.lock
 `, os.Args[0])
 	os.Exit(1)
 }
@@ -63,8 +63,8 @@ func main() {
 		err = update()
 	case "install", "i":
 		err = install(subArgs)
-	case "install_offline":
-		err = installOffline(subArgs)
+	case "build_deps":
+		err = buildDeps(subArgs)
 	case "build", "b":
 		err = run(append([]string{"go", "build"}, subArgs...), None)
 	case "test", "t":
