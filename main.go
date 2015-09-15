@@ -20,6 +20,7 @@ func usage() {
    gom exec        [arguments] : Execute command with bundle environment
    gom update                  : Check and update to newer versions
    gom tool        [options]   : Run go tool with bundles
+   gom check                   : Check if the vendored dependencies match the Gomfile
    gom fmt         [arguments] : Run go fmt
    gom gen travis-yml          : Generate .travis.yml which uses "gom test"
    gom gen gomfile DIR         : Scan packages from current directory as root
@@ -63,18 +64,30 @@ func main() {
 		err = update()
 	case "install", "i":
 		err = install(subArgs)
+	case "check":
+		err = checkStaleness()
 	case "build_deps":
-		err = buildDeps(subArgs)
+		if err = checkStaleness(); err == nil {
+			err = buildDeps(subArgs)
+		}
 	case "build", "b":
-		err = run(append([]string{"go", "build"}, subArgs...), None)
+		if err = checkStaleness(); err == nil {
+			err = run(append([]string{"go", "build"}, subArgs...), None)
+		}
 	case "test", "t":
-		err = run(append([]string{"go", "test"}, subArgs...), None)
+		if err = checkStaleness(); err == nil {
+			err = run(append([]string{"go", "test"}, subArgs...), None)
+		}
 	case "run", "r":
-		err = run(append([]string{"go", "run"}, subArgs...), None)
+		if err = checkStaleness(); err == nil {
+			err = run(append([]string{"go", "run"}, subArgs...), None)
+		}
 	case "doc", "d":
 		err = run(append([]string{"godoc"}, subArgs...), None)
 	case "exec", "e":
-		err = run(subArgs, None)
+		if err = checkStaleness(); err == nil {
+			err = run(subArgs, None)
+		}
 	case "tool":
 		err = run(append([]string{"go", "tool"}, subArgs...), None)
 	case "fmt":
