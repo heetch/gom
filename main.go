@@ -18,7 +18,7 @@ func usage() {
    gom run         [options]   : Run go file with bundles
    gom doc         [options]   : Run godoc for bundles
    gom exec        [arguments] : Execute command with bundle environment
-   gom update                  : Check and update to newer versions
+   gom outdated                : Display outdated packages
    gom tool        [options]   : Run go tool with bundles
    gom check                   : Check if the vendored dependencies match the Gomfile
    gom fmt         [arguments] : Run go fmt
@@ -60,8 +60,8 @@ func main() {
 	var err error
 	subArgs := flag.Args()[1:]
 	switch flag.Arg(0) {
-	case "update", "u":
-		err = update()
+	case "outdated":
+		err = outdated()
 	case "install", "i":
 		err = install(subArgs)
 	case "check":

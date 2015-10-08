@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"os/user"
 	"strings"
 
@@ -89,6 +88,12 @@ var (
 	errProviderNotSupported = fmt.Errorf("Provider not supported")
 )
 
+func packageName(name string) string {
+	projectName := strings.Replace(name, "github.com/", "", -1)
+	tab := strings.Split(projectName, "/")
+	return strings.Join(tab[0:2], "/")
+}
+
 func getUpdates(g Gom) (*updates, error) {
 	if !strings.HasPrefix(g.name, "github.com/") {
 		return nil, errProviderNotSupported
@@ -111,10 +116,7 @@ func getUpdates(g Gom) (*updates, error) {
 		token = m.Login
 	}
 
-	projectName := strings.Replace(g.name, "github.com/", "", -1)
-	tab := strings.Split(projectName, "/")
-	packageName := strings.Join(tab[0:2], "/")
-	res, err := http.Get(fmt.Sprintf("https://api.github.com/repos/%s/commits?access_token=%s", packageName, token))
+	res, err := http.Get(fmt.Sprintf("https://api.github.com/repos/%s/commits?access_token=%s", packageName(g.name), token))
 	if err != nil {
 		return nil, err
 	}
@@ -130,12 +132,10 @@ func getUpdates(g Gom) (*updates, error) {
 		return nil, err
 	}
 
-	return &updates{
-		latestVersion: commits[0].Sha,
-	}, nil
+	return &updates{latestVersion: commits[0].Sha}, nil
 }
 
-func update() error {
+func outdated() error {
 	allGoms, err := parseGomfile("Gomfile")
 	if err != nil {
 		return err
@@ -162,20 +162,10 @@ func update() error {
 			fmt.Printf("  \\_ Up to date\n")
 		} else {
 			fmt.Printf("  \\_ Latest version: %s\n", updates.latestVersion)
-			g.options["commit"] = updates.latestVersion
+			fmt.Printf("  \\_ Tree: http://github.com/%s/tree/%s\n", packageName(g.name), updates.latestVersion)
+			fmt.Printf("  \\_ Compare changes: http://github.com/%s/compare/%s...%s\n", packageName(g.name), commit, updates.latestVersion)
 		}
 	}
 
-	f, err := os.Create("Gomfile")
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	for _, g := range allGoms {
-		fmt.Fprintf(f, "%s\n", g.GomfileEntry())
-	}
-
-	fmt.Printf("\nUp to date\n")
 	return nil
 }

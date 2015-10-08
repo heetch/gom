@@ -101,7 +101,8 @@ func genGomfile(directory string) error {
 	for _, pkg := range all {
 		fmt.Fprintf(f, "gom '%s'\n", pkg)
 	}
-	return update()
+
+	return nil
 }
 
 func genGomfileLock() error {
