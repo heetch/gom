@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 )
 
@@ -28,8 +30,35 @@ func getVcsCommand(vendor string, path string) (*vcsCmd, string, error) {
 	return nil, "", fmt.Errorf("Unable to get the VCS")
 }
 
+func locateGomfile() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	for {
+		file := filepath.Join(dir, "Gomfile")
+		if isFile(file) {
+			return file, nil
+		}
+		next := filepath.Clean(filepath.Join(dir, ".."))
+		if next == dir {
+			break
+		}
+		dir = next
+	}
+
+	return "", errors.New("Can't locate Gomfile")
+}
+
 func checkStaleness() error {
-	allGoms, err := parseGomfile("Gomfile")
+	gomfile, err := locateGomfile()
+	if err != nil {
+		return err
+	}
+
+	var allGoms []Gom
+	allGoms, err = parseGomfile(gomfile)
 	if err != nil {
 		return err
 	}
@@ -42,7 +71,7 @@ func checkStaleness() error {
 			continue
 		}
 
-		vendor, err := filepath.Abs(vendorFolder)
+		vendor, err := filepath.Abs(filepath.Join(filepath.Dir(gomfile), vendorFolder))
 		if err != nil {
 			return err
 		}
